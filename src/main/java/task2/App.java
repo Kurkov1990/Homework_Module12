@@ -3,7 +3,7 @@ package task2;
 public class App {
 
     public static void main(String[] args) throws InterruptedException {
-        int n = 30;
+        int n = 15;
         FizzBuzzOperation task = new FizzBuzzOperation(n);
 
         Thread fizzThread = new FizzBuzzProcessor(task, FizzBuzzType.FIZZ);
