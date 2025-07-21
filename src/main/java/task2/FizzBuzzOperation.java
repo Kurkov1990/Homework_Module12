@@ -2,6 +2,7 @@ package task2;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.function.IntPredicate;
 
 public class FizzBuzzOperation {
     private final int n;
@@ -13,10 +14,10 @@ public class FizzBuzzOperation {
         this.n = n;
     }
 
-    public void fizz() {
+    private void processTask(IntPredicate condition, String output) {
         while (true) {
             synchronized (lock) {
-                while (current <= n && !(current % 3 == 0 && current % 5 != 0)) {
+                while (current <= n && !condition.test(current)) {
                     try {
                         lock.wait();
                     } catch (InterruptedException e) {
@@ -28,77 +29,27 @@ public class FizzBuzzOperation {
                     lock.notifyAll();
                     return;
                 }
-                outputQueue.offer("fizz");
+                outputQueue.offer(output.equals("number") ? String.valueOf(current) : output);
                 current++;
                 lock.notifyAll();
             }
         }
+    }
+
+    public void fizz() {
+        processTask(i -> i % 3 == 0 && i % 5 != 0, "fizz");
     }
 
     public void buzz() {
-        while (true) {
-            synchronized (lock) {
-                while (current <= n && !(current % 5 == 0 && current % 3 != 0)) {
-                    try {
-                        lock.wait();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        return;
-                    }
-                }
-                if (current > n) {
-                    lock.notifyAll();
-                    return;
-                }
-                outputQueue.offer("buzz");
-                current++;
-                lock.notifyAll();
-            }
-        }
+        processTask(i -> i % 5 == 0 && i % 3 != 0, "buzz");
     }
 
     public void fizzbuzz() {
-        while (true) {
-            synchronized (lock) {
-                while (current <= n && !(current % 3 == 0 && current % 5 == 0)) {
-                    try {
-                        lock.wait();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        return;
-                    }
-                }
-                if (current > n) {
-                    lock.notifyAll();
-                    return;
-                }
-                outputQueue.offer("fizzbuzz");
-                current++;
-                lock.notifyAll();
-            }
-        }
+        processTask(i -> i % 3 == 0 && i % 5 == 0, "fizzbuzz");
     }
 
     public void number() {
-        while (true) {
-            synchronized (lock) {
-                while (current <= n && (current % 3 == 0 || current % 5 == 0)) {
-                    try {
-                        lock.wait();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        return;
-                    }
-                }
-                if (current > n) {
-                    lock.notifyAll();
-                    return;
-                }
-                outputQueue.offer(String.valueOf(current));
-                current++;
-                lock.notifyAll();
-            }
-        }
+        processTask(i -> i % 3 != 0 && i % 5 != 0, "number");
     }
 
     public void printOutput() {
